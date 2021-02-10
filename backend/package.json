@@ -1,5 +1,5 @@
 {
-  "name": "movies-explorer-api",
+  "name": "movies-explorer-full",
   "version": "1.0.0",
   "description": "backend",
   "main": "app.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DmitryRag/movies-explorer-api.git"
+    "url": "git+https://github.com/DmitryRag/movies-explorer-full.git"
   },
   "author": "Dmitry Ragoyzha",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/DmitryRag/movies-explorer-api/issues"
+    "url": "https://github.com/DmitryRag/movies-explorer-full/issues"
   },
-  "homepage": "https://github.com/DmitryRag/movies-explorer-api#readme",
+  "homepage": "https://github.com/DmitryRag/movies-explorer-full#readme",
   "devDependencies": {
     "eslint": "^7.19.0",
     "eslint-config-airbnb-base": "^14.2.1",
