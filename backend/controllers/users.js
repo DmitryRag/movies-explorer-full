@@ -64,13 +64,21 @@ const updateUser = (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-
-  return User.findUserByCredentials(email, password)
+  User.findOne({ email }).select('+password')
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-      res.send({ token });
+      if (!user) {
+        throw new NotAuthError(wrongPassOrEmailErr);
+      }
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new NotAuthError(wrongPassOrEmailErr);
+          }
+          const token = jwt.sign({ _id: user._id }, JWT_SECRET, { noTimestamp: true, expiresIn: '7d' });
+          return res.send({ token });
+        });
     })
-    .catch(() => next(new NotAuthError(wrongPassOrEmailErr)));
+    .catch(next);
 };
 
 module.exports = {
