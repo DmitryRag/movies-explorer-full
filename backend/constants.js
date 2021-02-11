@@ -8,6 +8,10 @@ const sameUserErr = 'Такой пользователь уже существу
 const wrongPassOrEmailErr = 'Неправильные почта или пароль';
 const movieIdNotFoundErr = 'Фильм с таким id не найден';
 const noRightsToDeleteErr = 'Недостаточно прав для удаления фильма';
+const enterEmailMessage = 'введите Email';
+const incorrectTrailerUrlErr = 'Некорректная ссылка на трейлер';
+const incorrectImageUrlErr = 'Некорректная ссылка на картинку';
+const incorrectThumbnaillUrlErr = 'Некорректная ссылка на превью';
 
 module.exports = {
   serverReadyToFailErr,
@@ -20,4 +24,8 @@ module.exports = {
   wrongPassOrEmailErr,
   movieIdNotFoundErr,
   noRightsToDeleteErr,
+  enterEmailMessage,
+  incorrectTrailerUrlErr,
+  incorrectImageUrlErr,
+  incorrectThumbnaillUrlErr,
 };

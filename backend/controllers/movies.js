@@ -45,16 +45,11 @@ const createMovie = (req, res, next) => {
     nameEn,
     owner,
   })
-    .then((movie) => {
-      const createdMovie = movie.toObject();
-      delete createdMovie.owner;
-      res.send(createdMovie);
-    })
+    .then((movie) => res.send({ movie }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new BadReqError(validationErr);
       }
-      throw err;
     })
     .catch(next);
 };
