@@ -14,13 +14,16 @@ const {
 } = require('../constants');
 
 const getUser = (req, res, next) => {
-  const { id } = req.params;
-  User.findOne({ _id: id })
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError(userIdNotFoundErr);
+  User.findOne({ _id: req.user._id })
+    .orFail(new NotFoundError(userIdNotFoundErr))
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new BadReqError(validationErr);
       }
-      return res.status(200).send(user);
+      throw err;
     })
     .catch(next);
 };
