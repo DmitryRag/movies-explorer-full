@@ -9,7 +9,7 @@ const { auth } = require('../middlewares/auth');
 const { signinValidation, signupValidation, updateValidation } = require('../middlewares/validation');
 
 usersRouter.get('/users/me', auth, getUser);
-usersRouter.patch('/users/me', updateValidation, updateUser);
+usersRouter.patch('/users/me', auth, updateValidation, updateUser);
 usersRouter.post('/signup', signupValidation, createUser);
 usersRouter.post('/signin', signinValidation, login);
 

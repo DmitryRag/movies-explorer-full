@@ -8,6 +8,7 @@ const {
 
 const updateValidation = celebrate({
   body: Joi.object().keys({
+    email: Joi.string().required().email(),
     name: Joi.string().required().min(2).max(30),
   }),
 });
@@ -29,10 +30,10 @@ const signinValidation = celebrate({
 
 const postMovieValidation = celebrate({
   body: Joi.object().keys({
+    movieId: Joi.string().required(),
     country: Joi.string().required(),
     director: Joi.string().required(),
     duration: Joi.number().required(),
-    date: Joi.string().required(),
     year: Joi.string().required(),
     description: Joi.string().required(),
     image: Joi.string().required().custom((value, helpers) => {
@@ -54,7 +55,7 @@ const postMovieValidation = celebrate({
       return value;
     }),
     nameRU: Joi.string().required(),
-    nameEn: Joi.string().required(),
+    nameEN: Joi.string().required(),
   }),
 });
 

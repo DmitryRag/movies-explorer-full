@@ -3,83 +3,60 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { JWT_SECRET } = require('../config');
 const NotFoundError = require('../errors/not-found-error');
-const BadReqError = require('../errors/bad-req-error');
-const ConflictError = require('../errors/conflict-error');
-const NotAuthError = require('../errors/not-auth-error');
 const {
   userIdNotFoundErr,
-  validationErr,
-  sameUserErr,
-  wrongPassOrEmailErr,
 } = require('../constants');
 
 const getUser = (req, res, next) => {
-  User.findOne({ _id: req.user._id })
-    .orFail(new NotFoundError(userIdNotFoundErr))
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new BadReqError(validationErr);
+  const id = req.user._id;
+  User.findById(id)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError(userIdNotFoundErr);
       }
-      throw err;
-    })
-    .catch(next);
-};
-
-const createUser = (req, res, next) => {
-  bcrypt.hash(req.body.password, 10)
-    .then((hash) => User.create({
-      name: req.body.name,
-      email: req.body.email,
-      password: hash,
-    }))
-    .then((user) => User.find({ _id: user._id }))
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadReqError(validationErr);
-      }
-      if (err.code === 11000) {
-        throw new ConflictError(sameUserErr);
-      }
+      res.send(user);
     })
     .catch(next);
 };
 
 const updateUser = (req, res, next) => {
+  const { name, email } = req.body;
   const id = req.user._id;
-  const newName = req.body.name;
-  User.findOneAndUpdate(
-    { _id: id },
-    { name: newName },
-    { runValidators: true, new: true },
-  )
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadReqError(err.message);
-      }
-    })
+  User.checkUserByEmail(email)
+    .then(() => User.findByIdAndUpdate(
+      id,
+      { name, email },
+      { runValidators: true, new: true },
+    ))
+    .then((result) => res.send(result))
+    .catch(next);
+};
+
+const createUser = (req, res, next) => {
+  const {
+    email, password, name,
+  } = req.body;
+  User.checkUserByEmail(email)
+    .then(() => bcrypt.hash(password, 10))
+    .then((hash) => User.create({
+      email,
+      name,
+      password: hash,
+    }))
+    .then((user) => res.send({
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+    }))
     .catch(next);
 };
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  User.findOne({ email }).select('+password')
+  User.findUserByCredentials(email, password)
     .then((user) => {
-      if (!user) {
-        throw new NotAuthError(wrongPassOrEmailErr);
-      }
-      return bcrypt.compare(password, user.password)
-        .then((matched) => {
-          if (!matched) {
-            throw new NotAuthError(wrongPassOrEmailErr);
-          }
-          const token = jwt.sign({ _id: user._id }, JWT_SECRET, { noTimestamp: true, expiresIn: '7d' });
-          return res.send({ token });
-        });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { noTimestamp: true, expiresIn: '7d' });
+      return res.send({ token });
     })
     .catch(next);
 };

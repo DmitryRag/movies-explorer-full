@@ -1,81 +1,76 @@
 const Movie = require('../models/movie');
-const ServerError = require('../errors/server-error');
 const BadReqError = require('../errors/bad-req-error');
 const NotFoundError = require('../errors/not-found-error');
 const ForbiddenError = require('../errors/forbidden-error');
 const {
-  generalServerErr,
   validationErr,
   movieIdNotFoundErr,
   noRightsToDeleteErr,
 } = require('../constants');
 
 const getMovies = (req, res, next) => {
-  Movie.find({ owner: req.user._id })
+  Movie.find({})
     .then((movies) => res.status(200).send(movies))
-    .catch(() => next(new ServerError(generalServerErr)));
+    .catch(next);
 };
 
 const createMovie = (req, res, next) => {
-  const owner = req.user._id;
   const {
     country,
     director,
     duration,
-    date,
     year,
     description,
     image,
     trailer,
-    thumbnail,
     nameRU,
-    nameEn,
+    nameEN,
+    thumbnail,
+    movieId,
   } = req.body;
   Movie.create({
     country,
     director,
     duration,
-    date,
     year,
     description,
     image,
     trailer,
-    thumbnail,
     nameRU,
-    nameEn,
-    owner,
+    nameEN,
+    thumbnail,
+    owner: req.user._id,
+    movieId,
   })
-    .then((movie) => res.send({ movie }))
+    .then((movie) => res.status(200).send(movie))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadReqError(validationErr);
+        next(new BadReqError(validationErr));
       }
-    })
-    .catch(next);
+      next(err);
+    });
 };
 
 const deleteMovie = (req, res, next) => {
-  Movie.findById({ _id: req.params.id })
-    .orFail(new NotFoundError(movieIdNotFoundErr))
-    .select('+owner')
+  Movie.findById(req.params.movieId)
     .then((movie) => {
-      if (!movie.owner.equals(req.user._id)) {
+      if (!movie) {
+        throw new NotFoundError(movieIdNotFoundErr);
+      }
+      if (movie.owner.toString() !== req.user._id) {
         throw new ForbiddenError(noRightsToDeleteErr);
       }
-      Movie.deleteOne(movie)
-        .then(() => {
-          const deletedMovie = movie.toObject();
-          delete deletedMovie.owner;
-          res.send(deletedMovie);
+      return Movie.findByIdAndDelete(req.params.movieId)
+        .then((result) => {
+          res.status(200).send(result);
         });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadReqError(validationErr);
+      if (err.name === 'CastError') {
+        next(new BadReqError(movieIdNotFoundErr));
       }
-      throw err;
-    })
-    .catch(next);
+      next(err);
+    });
 };
 
 module.exports = {
