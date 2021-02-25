@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
 const NotAuthError = require('../errors/not-auth-error');
+const ConflictError = require('../errors/conflict-error');
 const {
   enterEmailMessage,
   wrongPassOrEmailErr,
@@ -36,7 +37,7 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     .select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(NotAuthError(wrongPassOrEmailErr));
+        return Promise.reject(new NotAuthError(wrongPassOrEmailErr));
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
@@ -52,7 +53,7 @@ userSchema.statics.checkUserByEmail = function (email) {
   return this.findOne({ email })
     .then((user) => {
       if (user) {
-        return Promise.reject(new NotAuthError(sameUserErr));
+        return Promise.reject(new ConflictError(sameUserErr));
       }
       return Promise.resolve();
     });
