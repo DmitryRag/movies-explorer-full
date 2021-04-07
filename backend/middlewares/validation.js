@@ -30,7 +30,7 @@ const signinValidation = celebrate({
 
 const postMovieValidation = celebrate({
   body: Joi.object().keys({
-    movieId: Joi.string().required(),
+    movieId: Joi.number().required(),
     country: Joi.string().required(),
     director: Joi.string().required(),
     duration: Joi.number().required(),
@@ -61,7 +61,7 @@ const postMovieValidation = celebrate({
 
 const deleteMovieValidation = celebrate({
   params: Joi.object().keys({
-    movieId: Joi.string().alphanum().required(),
+    movieId: Joi.number().alphanum().required(),
   }),
 });
 
